@@ -1,5 +1,27 @@
 #!/bin/bash
 
+# Function to install a package if it is not already installed
+install_if_missing() {
+    local package_name="$1"
+    if ! command -v "$package_name" >/dev/null 2>&1; then
+        echo "Installing $package_name..."
+        if [ "$(uname -s)" = "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y "$package_name"
+        elif [ "$(uname -s)" = "Darwin" ]; then
+            brew install "$package_name"
+        else
+            echo "Unsupported operating system. Please install $package_name manually."
+            exit 1
+        fi
+    fi
+}
+
+# Install required dependencies
+install_if_missing "curl"
+install_if_missing "jq"
+install_if_missing "git"
+
 TOKEN_FILE="$HOME/.github_token"
 GITHUB_USERNAME="your_username"
 GITHUB_REPO="your_repository"
@@ -18,6 +40,7 @@ generate_token() {
         echo "Token generated and stored."
     else
         echo "Token generation failed."
+        exit 1
     fi
 }
 
@@ -40,4 +63,3 @@ fi
 # git clone using $GITHUB_TOKEN
 # git pull using $GITHUB_TOKEN
 # git push using $GITHUB_TOKEN
-
